@@ -56,7 +56,7 @@ public class AFUNIXSocketAddress extends InetSocketAddress {
     if (port != 0) {
       NativeUnixSocket.setPort1(this, port);
     }
-    this.socketFile = socketFile.getCanonicalPath();
+    this.socketFile = socketFile.getPath();
   }
 
   /**
