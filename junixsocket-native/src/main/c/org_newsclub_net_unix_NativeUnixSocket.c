@@ -40,10 +40,12 @@ extern "C" {
 #endif
 
 #define junixsocket_have_sun_len
+#undef junixsocket_have_abstract_name
 
 // Linux
 #ifdef __linux__
 #undef junixsocket_have_sun_len
+#define junixsocket_have_abstract_name
 #endif
 
 // Solaris
@@ -124,7 +126,7 @@ JNIEXPORT void JNICALL Java_org_newsclub_net_unix_NativeUnixSocket_accept
 
 	const char* socketFile = (*env)->GetStringUTFChars(env, file, NULL);
 	struct sockaddr_un su;
-	int realPathLen;
+	unsigned int realPathLen;
 	if(socketFile == NULL) {
 		return; // OOME
 	}
@@ -142,7 +144,19 @@ JNIEXPORT void JNICALL Java_org_newsclub_net_unix_NativeUnixSocket_accept
 #ifdef junixsocket_have_sun_len
 	su.sun_len = (unsigned char)(sizeof(su) - sizeof(su.sun_path) + realPathLen);
 #endif
+#ifdef junixsocket_have_abstract_name
+	/* we always calcutate the correct minimum suLength for pathname and abtract name */
+	if (socketFile[0] == '/') {
+		/* for path names the string is terminated by \0 */
+		strcpy(su.sun_path, socketFile);
+	} else {
+		/* for abtract names the string resides behind a leading \0 */
+		strcpy(&su.sun_path[1], socketFile);
+		su.sun_path[0] = 0;
+	}
+#else
 	strcpy(su.sun_path, socketFile);
+#endif
 	(*env)->ReleaseStringUTFChars(env, file, socketFile);
 
 	socklen_t suLength = (socklen_t)(realPathLen + sizeof(su.sun_family)
@@ -170,7 +184,7 @@ JNIEXPORT void JNICALL Java_org_newsclub_net_unix_NativeUnixSocket_bind
 (JNIEnv * env, jclass clazz, jstring file, jobject fd, jint backlog) {
 	const char* socketFile = (*env)->GetStringUTFChars(env, file, NULL);
 	struct sockaddr_un su;
-	int realPathLen;
+	unsigned int realPathLen;
 	if(socketFile == NULL) {
 		return; // OOME
 	}
@@ -200,7 +214,19 @@ JNIEXPORT void JNICALL Java_org_newsclub_net_unix_NativeUnixSocket_bind
 	su.sun_len = (unsigned char)(sizeof(su) - sizeof(su.sun_path) + realPathLen);
 #endif
 
+#ifdef junixsocket_have_abstract_name
+	/* we always calcutate the correct minimum suLength for pathname and abtract name */
+	if (socketFile[0] == '/') {
+		/* for path names the string is terminated by \0 */
+		strcpy(su.sun_path, socketFile);
+	} else {
+		/* for abtract names the string resides behind a leading \0 */
+		strcpy(&su.sun_path[1], socketFile);
+		su.sun_path[0] = 0;
+	}
+#else
 	strcpy(su.sun_path, socketFile);
+#endif
 	(*env)->ReleaseStringUTFChars(env, file, socketFile);
 
 	socklen_t suLength = (socklen_t)(realPathLen + sizeof(su.sun_family)
@@ -293,7 +319,7 @@ JNIEXPORT void JNICALL Java_org_newsclub_net_unix_NativeUnixSocket_connect
 (JNIEnv * env, jclass clazz, jstring file, jobject fd) {
 	const char* socketFile = (*env)->GetStringUTFChars(env, file, NULL);
 	struct sockaddr_un su;
-	int realPathLen;
+	unsigned int realPathLen;
 	if(socketFile == NULL) {
 		return; // OOME
 	}
@@ -316,7 +342,19 @@ JNIEXPORT void JNICALL Java_org_newsclub_net_unix_NativeUnixSocket_connect
 	su.sun_len = (unsigned char)(sizeof(su) - sizeof(su.sun_path) + realPathLen);
 #endif
 
+#ifdef junixsocket_have_abstract_name
+	/* we always calcutate the correct minimum suLength for pathname and abtract name */
+	if (socketFile[0] == '/') {
+		/* for path names the string is terminated by \0 */
+		strcpy(su.sun_path, socketFile);
+	} else {
+		/* for abtract names the string resides behind a leading \0 */
+		strcpy(&su.sun_path[1], socketFile);
+		su.sun_path[0] = 0;
+	}
+#else
 	strcpy(su.sun_path, socketFile);
+#endif
 	(*env)->ReleaseStringUTFChars(env, file, socketFile);
 
 	socklen_t suLength = (socklen_t)(realPathLen + sizeof(su.sun_family)
