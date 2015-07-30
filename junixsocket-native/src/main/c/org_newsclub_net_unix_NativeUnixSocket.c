@@ -123,10 +123,11 @@ JNIEXPORT void JNICALL Java_org_newsclub_net_unix_NativeUnixSocket_accept
 (JNIEnv * env, jclass clazz, jstring file, jobject fdServer, jobject fd) {
 
 	const char* socketFile = (*env)->GetStringUTFChars(env, file, NULL);
+	struct sockaddr_un su;
 	if(socketFile == NULL) {
 		return; // OOME
 	}
-	if(strlen(socketFile) >= 104) {
+	if(strlen(socketFile) >= sizeof(su.sun_path) - 2) {
 		(*env)->ReleaseStringUTFChars(env, file, socketFile);
 		org_newsclub_net_unix_NativeUnixSocket_throwException(env,
 				"Pathname too long for socket", file);
@@ -135,7 +136,6 @@ JNIEXPORT void JNICALL Java_org_newsclub_net_unix_NativeUnixSocket_accept
 
 	int serverHandle = org_newsclub_net_unix_NativeUnixSocket_getFD(env, fdServer);
 
-	struct sockaddr_un su;
 	su.sun_family = AF_UNIX;
 #ifdef junixsocket_have_sun_len
 	su.sun_len = (unsigned char)(sizeof(su) - sizeof(su.sun_path) + strlen(su.sun_path));
@@ -167,10 +167,11 @@ JNIEXPORT void JNICALL Java_org_newsclub_net_unix_NativeUnixSocket_accept
 JNIEXPORT void JNICALL Java_org_newsclub_net_unix_NativeUnixSocket_bind
 (JNIEnv * env, jclass clazz, jstring file, jobject fd, jint backlog) {
 	const char* socketFile = (*env)->GetStringUTFChars(env, file, NULL);
+	struct sockaddr_un su;
 	if(socketFile == NULL) {
 		return; // OOME
 	}
-	if(strlen(socketFile) >= 104) {
+	if(strlen(socketFile) >= sizeof(su.sun_path) - 2) {
 		(*env)->ReleaseStringUTFChars(env, file, socketFile);
 		org_newsclub_net_unix_NativeUnixSocket_throwException(env,
 				"Pathname too long for socket", file);
@@ -190,7 +191,6 @@ JNIEXPORT void JNICALL Java_org_newsclub_net_unix_NativeUnixSocket_bind
 		org_newsclub_net_unix_NativeUnixSocket_throwException(env, strerror(errno), NULL);
 	}
 
-	struct sockaddr_un su;
 	su.sun_family = AF_UNIX;
 #ifdef junixsocket_have_sun_len
 	su.sun_len = (unsigned char)(sizeof(su) - sizeof(su.sun_path) + strlen(su.sun_path));
@@ -288,10 +288,11 @@ JNIEXPORT void JNICALL Java_org_newsclub_net_unix_NativeUnixSocket_listen
 JNIEXPORT void JNICALL Java_org_newsclub_net_unix_NativeUnixSocket_connect
 (JNIEnv * env, jclass clazz, jstring file, jobject fd) {
 	const char* socketFile = (*env)->GetStringUTFChars(env, file, NULL);
+	struct sockaddr_un su;
 	if(socketFile == NULL) {
 		return; // OOME
 	}
-	if(strlen(socketFile) >= 104) {
+	if(strlen(socketFile) >= sizeof(su.sun_path) - 2) {
 		(*env)->ReleaseStringUTFChars(env, file, socketFile);
 		org_newsclub_net_unix_NativeUnixSocket_throwException(env,
 				"Pathname too long for socket", file);
@@ -304,7 +305,6 @@ JNIEXPORT void JNICALL Java_org_newsclub_net_unix_NativeUnixSocket_connect
 		return;
 	}
 
-	struct sockaddr_un su;
 	su.sun_family = AF_UNIX;
 #ifdef junixsocket_have_sun_len
 	su.sun_len = (unsigned char)(sizeof(su) - sizeof(su.sun_path) + strlen(su.sun_path));
